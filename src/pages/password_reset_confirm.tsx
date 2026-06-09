@@ -6,7 +6,7 @@ function ResetPassword() {
   const [password, setPassword] = useState("");
 
   const resetPassword = () => {
-    fetch("http://127.0.0.1:8000/api/password-reset-confirm/", {
+    fetch("https://ai-career-coach-backend-ye2g.onrender.com/api/password-reset-confirm/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

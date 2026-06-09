@@ -6,7 +6,7 @@ function ImproveResume() {
   const [output, setOutput] = useState("");
 
   const improve = async () => {
-    const res = await axios.post("http://127.0.0.1:8000/improve-resume/", {
+    const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/improve-resume/", {
       resume_text: text
     });
 

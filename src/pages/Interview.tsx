@@ -45,7 +45,7 @@ function Interview() {
   }, []);
 
   const loadTopics = async () => {
-    const res = await axios.get(`http://127.0.0.1:8000/get-topics/${categoryId}/`);
+    const res = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/get-topics/${categoryId}/`);
     setAvailableTopics(res.data);
   };
 
@@ -56,7 +56,7 @@ function Interview() {
 
   const handleStartWithTopics = async () => {
     try {
-      const res = await axios.post("http://127.0.0.1:8000/start-interview/", {
+      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/start-interview/", {
         name: "User",
         field_id: fieldId,
         category_id: categoryId,
@@ -78,7 +78,7 @@ function Interview() {
 
   const fetchQuestion = async (sid: number, stepNo: number) => {
     try {
-      const res = await axios.post("http://127.0.0.1:8000/get-next-question/", {
+      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/get-next-question/", {
         session_id: sid,
         step: stepNo,
       });
@@ -101,7 +101,7 @@ const handleNext = async () => {
 
     // Hamesha answer submit karo
     if (question?.question_id && !feedback) { 
-      await axios.post("http://127.0.0.1:8000/submit-answer/", {
+      await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
         session_id: sessionId,
         question_id: question.question_id,
         answer: isCoding ? (code || "No code submitted") : (answer || "No answer submitted"),
@@ -114,13 +114,13 @@ const handleNext = async () => {
     const res = await fetchQuestion(sessionId, next);
 
     if (!res || res.done) {
-      const report = await axios.get(`http://127.0.0.1:8000/report/${sessionId}/`);
+      const report = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/report/${sessionId}/`);
       setAnalysis(report.data);
       setInterviewDone(true);
     }
   };
   const runCode = async () => {
-    const res = await axios.post("http://127.0.0.1:8000/run-code/", {
+    const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/run-code/", {
       code,
       language: language,
     });
@@ -139,7 +139,7 @@ const handleNext = async () => {
   //   if (feedback) return;
 
   //   try {
-  //     const res = await axios.post("http://127.0.0.1:8000/submit-answer/", {
+  //     const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
   //       session_id: sessionId,
   //       question_id: question.question_id,
   //       answer: answer,
@@ -154,7 +154,7 @@ const submitAnswer = async () => {
     if (feedback) return;
 
     try {
-      const res = await axios.post("http://127.0.0.1:8000/submit-answer/", {
+      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
         session_id: sessionId,
         question_id: question.question_id,
         answer: answer,

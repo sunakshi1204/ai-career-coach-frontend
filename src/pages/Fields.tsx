@@ -15,7 +15,7 @@ function Fields() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/fields/")
+      .get("https://ai-career-coach-backend-ye2g.onrender.com/fields/")
       .then((res) => setFields(res.data))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));

@@ -19,7 +19,7 @@ function ResumeAnalyzer() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/analyze-resume/",
+        "https://ai-career-coach-backend-ye2g.onrender.com/analyze-resume/",
         formData,
         {
           headers: {

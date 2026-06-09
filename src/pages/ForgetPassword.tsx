@@ -4,7 +4,7 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
 
   const sendResetLink = () => {
-    fetch("http://127.0.0.1:8000/api/forgot-password/", {
+    fetch("https://ai-career-coach-backend-ye2g.onrender.com/api/forgot-password/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

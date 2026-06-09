@@ -33,7 +33,7 @@ function JobMatcher() {
     setSearched(true);
 
     try {
-      const res = await axios.post("http://127.0.0.1:8000/jobs-match/", {
+      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/jobs-match/", {
         skills: skills.toLowerCase().split(/[\s,]+/),
       });
 
@@ -56,7 +56,7 @@ function JobMatcher() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/analyze-resume/",
+        "https://ai-career-coach-backend-ye2g.onrender.com/analyze-resume/",
         formData
       );
 
@@ -71,7 +71,7 @@ function JobMatcher() {
 
   const fetchJobDetail = async (id: number) => {
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/job/${id}/`);
+      const res = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/job/${id}/`);
       setSelectedJob(res.data);
     } catch {
       alert("Failed to load job detail");

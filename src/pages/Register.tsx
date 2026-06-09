@@ -26,7 +26,7 @@ function Register() {
     try {
       setLoading(true);
 
-      const res = await axios.post("http://127.0.0.1:8000/register/", {
+      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/register/", {
         email: form.email,
         password: form.password,
       });

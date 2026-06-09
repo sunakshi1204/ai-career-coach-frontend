@@ -38,7 +38,7 @@ function CategorySelect() {
   useEffect(() => {
     console.log("FIELD ID:", id);
     axios
-      .get(`http://127.0.0.1:8000/categories/?field_id=${id}`)
+      .get(`https://ai-career-coach-backend-ye2g.onrender.com/categories/?field_id=${id}`)
       .then((res) => setCategories(res.data))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));

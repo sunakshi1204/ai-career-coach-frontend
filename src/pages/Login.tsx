@@ -8,7 +8,7 @@ function Login() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    fetch("http://127.0.0.1:8000/login/", {
+    fetch("https://ai-career-coach-backend-ye2g.onrender.com/login/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -30,7 +30,7 @@ function Login() {
   };
 
   const sendLink = () => {
-    fetch("http://127.0.0.1:8000/api/password-reset/", {
+    fetch("https://ai-career-coach-backend-ye2g.onrender.com/api/password-reset/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
