@@ -11,15 +11,15 @@ function Register() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match ");
+      alert("Passwords do not match");
       return;
     }
 
@@ -33,22 +33,16 @@ function Register() {
 
       alert(res.data.message);
 
-// localStorage mein save karo
-localStorage.setItem("user_email", form.email);
-localStorage.setItem("user_name", form.name);
+      localStorage.setItem("user_email", form.email);
+      localStorage.setItem("user_name", form.name);
 
-setForm({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
+      setForm({ name: "", email: "", password: "", confirmPassword: "" });
 
-    } catch (err) {
-      if (err.response) {
-        alert(err.response.data.message || "Registration failed ");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.message || "Registration failed");
       } else {
-        alert("Server not responding ");
+        alert("Server not responding");
       }
     } finally {
       setLoading(false);
@@ -62,41 +56,10 @@ setForm({
         <p style={styles.sub}>Join AI Career Coach</p>
 
         <form onSubmit={handleRegister}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            style={styles.input}
-          />
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            style={styles.input}
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            style={styles.input}
-          />
-
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            style={styles.input}
-          />
+          <input type="text" name="name" placeholder="Full Name" value={form.name} onChange={handleChange} style={styles.input} />
+          <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} style={styles.input} />
+          <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} style={styles.input} />
+          <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} style={styles.input} />
 
           <button type="submit" style={styles.button} disabled={loading}>
             {loading ? "Creating Account..." : "Register"}
@@ -112,7 +75,8 @@ setForm({
 }
 
 export default Register;
-const styles = {
+
+const styles: { [key: string]: React.CSSProperties } = {
   container: {
     height: "100vh",
     display: "flex",
@@ -121,7 +85,6 @@ const styles = {
     background: "linear-gradient(135deg, #0f172a, #111827, #0b1220)",
     fontFamily: "system-ui",
   },
-
   card: {
     width: "380px",
     padding: "35px",
@@ -133,20 +96,17 @@ const styles = {
     textAlign: "center",
     color: "#e2e8f0",
   },
-
   title: {
     fontSize: "28px",
     fontWeight: "800",
     color: "#ffffff",
     letterSpacing: "1px",
   },
-
   sub: {
     fontSize: "14px",
     color: "#94a3b8",
     marginBottom: "20px",
   },
-
   input: {
     width: "100%",
     padding: "12px",
@@ -158,7 +118,6 @@ const styles = {
     outline: "none",
     transition: "0.3s",
   },
-
   button: {
     width: "100%",
     marginTop: "18px",
@@ -171,13 +130,11 @@ const styles = {
     cursor: "pointer",
     transition: "0.3s",
   },
-
   footer: {
     marginTop: "15px",
     fontSize: "13px",
     color: "#94a3b8",
   },
-
   link: {
     color: "#38bdf8",
     cursor: "pointer",
