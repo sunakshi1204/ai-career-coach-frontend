@@ -17,11 +17,14 @@ useEffect(() => {
   axios
     .get("https://ai-career-coach-backend-ye2g.onrender.com/fields/")
     .then((res) => {
-      const uniqueFields = [
-        ...new Map((res.data as Field[]).map((f: Field) => [f.name, f])).values()
-      ];
-      setFields(uniqueFields);
-    })
+  const seen = new Map();
+  (res.data as Field[]).forEach((f: Field) => {
+    if (!seen.has(f.name)) {
+      seen.set(f.name, f);
+    }
+  });
+  setFields([...seen.values()]);
+})
     .catch((err) => console.error(err))
     .finally(() => setLoading(false));
 }, []);
