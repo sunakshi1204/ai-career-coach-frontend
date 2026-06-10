@@ -18,7 +18,7 @@ useEffect(() => {
     .get("https://ai-career-coach-backend-ye2g.onrender.com/fields/")
     .then((res) => {
       const uniqueFields = [
-        ...new Map(res.data.map((f: Field) => [f.name, f])).values()
+        ...new Map((res.data as Field[]).map((f: Field) => [f.name, f])).values()
       ];
       setFields(uniqueFields);
     })

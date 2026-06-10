@@ -58,8 +58,8 @@ const loadTopics = async () => {
   );
 
   const uniqueTopics = Array.from(
-    new Map(res.data.map((t: any) => [t.id, t])).values()
-  );
+  new Map((res.data as TopicType[]).map((t: TopicType) => [t.id, t])).values()
+);
 
   setAvailableTopics(uniqueTopics);
 };
