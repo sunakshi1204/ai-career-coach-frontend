@@ -34,15 +34,29 @@ function CategorySelect() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  
+useEffect(() => {
+  console.log("FIELD ID:", id);
 
-  useEffect(() => {
-    console.log("FIELD ID:", id);
-    axios
-      .get(`https://ai-career-coach-backend-ye2g.onrender.com/categories/?field_id=${id}`)
-      .then((res) => setCategories(res.data))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [id]);
+  axios
+    .get(`https://ai-career-coach-backend-ye2g.onrender.com/categories/?field_id=${id}`)
+    .then((res) => {
+      console.log("CATEGORIES RESPONSE:", res.data);
+      setCategories(res.data);
+    })
+    .catch((err) => console.error("CATEGORY ERROR:", err))
+    .finally(() => setLoading(false));
+}, [id]);
+
+  // useEffect(() => {
+  //   console.log("FIELD ID:", id);
+  //   axios
+  //     .get(`https://ai-career-coach-backend-ye2g.onrender.com/categories/?field_id=${id}`)
+  //     .then((res) => setCategories(res.data))
+  //     .catch((err) => console.error(err))
+  //     .finally(() => setLoading(false));
+  // }, [id]);
 
   if (loading) {
     return (
