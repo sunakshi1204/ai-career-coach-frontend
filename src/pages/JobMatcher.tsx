@@ -33,9 +33,12 @@ function JobMatcher() {
     setSearched(true);
 
     try {
-      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/jobs-match/", {
-        skills: skills.toLowerCase().split(/[\s,]+/),
-      });
+      const res = await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/jobs-match/",
+        {
+          skills: skills.toLowerCase().split(/[\s,]+/),
+        }
+      );
 
       setJobs(res.data.job_matches || []);
     } catch (err) {
@@ -71,7 +74,10 @@ function JobMatcher() {
 
   const fetchJobDetail = async (id: number) => {
     try {
-      const res = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/job/${id}/`);
+      const res = await axios.get(
+        `https://ai-career-coach-backend-ye2g.onrender.com/job/${id}/`
+      );
+
       setSelectedJob(res.data);
     } catch {
       alert("Failed to load job detail");
@@ -80,89 +86,199 @@ function JobMatcher() {
 
   const handleError = (err: any) => {
     console.error(err);
-    if (err?.response) alert(err.response.data?.error);
-    else alert("Backend not running ");
+
+    if (err?.response) {
+      alert(err.response.data?.error);
+    } else {
+      alert("Backend not running");
+    }
   };
 
   return (
     <div className="container">
-      <h2 className="heading">💼 Job Matcher</h2>
+      {/* HERO SECTION */}
+      <div className="hero">
+        <h1 className="heading"> AI Job Matcher</h1>
+        <p className="subtitle">
+          Match your skills with the best jobs instantly
+        </p>
+      </div>
 
-      {/* INPUT */}
-      <input
-        className="input"
-        placeholder="Enter skills"
-        value={skills}
-        onChange={(e) => setSkills(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && matchJobs()}
-      />
+      {/* SEARCH BOX */}
+      <div className="search-card">
+        <input
+          className="input"
+          placeholder="Enter skills (React, Python, Django...)"
+          value={skills}
+          onChange={(e) => setSkills(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && matchJobs()}
+        />
 
-      <button className="btn btn-primary" onClick={matchJobs}>
-         Match
-      </button>
+        <button className="btn btn-primary" onClick={matchJobs}>
+          🔍 Match Jobs
+        </button>
+      </div>
 
       {/* RESUME */}
-      <div>
+      <div className="resume-card">
+        <h3> Resume Matching</h3>
+
         <input
           className="file-input"
           type="file"
           onChange={(e) => setResume(e.target.files?.[0] || null)}
         />
+
         <button className="btn btn-green" onClick={uploadResume}>
-          📄 Upload Resume
+          Upload Resume
         </button>
       </div>
 
       {/* LOADING */}
-      {loading && <p>Loading...</p>}
+      {loading && (
+        <div className="loading-box">
+          <div className="loader"></div>
+          <p>Finding best jobs for you...</p>
+        </div>
+      )}
 
-      {/* NO RESULT */}
-      {searched && !loading && jobs.length === 0 && <p>No jobs found</p>}
+      {/* NO JOBS */}
+      {searched && !loading && jobs.length === 0 && (
+        <div className="empty-state">
+          <h3> No Jobs Found</h3>
+          <p>Try adding more skills.</p>
+        </div>
+      )}
+
+      {/* JOBS COUNT */}
+      {jobs.length > 0 && (
+        <div className="result-header">
+          <h3> {jobs.length} Matching Jobs Found</h3>
+        </div>
+      )}
 
       {/* JOB LIST */}
-      {jobs.map((job) => (
-        <div
-          key={job.id}
-          onClick={() => fetchJobDetail(job.id)}
-          className="job-card"
-        >
-          <h3>{job.title}</h3>
-          <p>{job.company} | {job.location}</p>
-          <p className="score">Score: {job.match_score}%</p>
-        </div>
-      ))}
+      <div className="jobs-grid">
+        {jobs.map((job) => (
+          <div
+            key={job.id}
+            onClick={() => fetchJobDetail(job.id)}
+            className="job-card"
+          >
+            <div className="job-top">
+              <div>
+                <h3>{job.title}</h3>
 
-      {/* DETAIL VIEW */}
+                <p className="company">
+                   {job.company || "Unknown Company"}
+                </p>
+
+                <p className="location">
+                   {job.location || "Remote"}
+                </p>
+              </div>
+
+              <div className="score-circle">
+                {job.match_score}%
+              </div>
+            </div>
+
+            <div className="skills-wrapper">
+              {job.matched_skills?.slice(0, 4).map((skill, index) => (
+                <span key={index} className="skill-chip">
+                  {skill}
+                </span>
+              ))}
+            </div>
+
+            <button className="view-btn">
+              View Details →
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* JOB DETAIL MODAL */}
       {selectedJob && (
-        <div className="detail-box">
-          <h2>{selectedJob.title}</h2>
-
-          <p> {selectedJob.company}</p>
-          <p> {selectedJob.location}</p>
-          <p> {selectedJob.job_type}</p>
-          <p> {selectedJob.experience}</p>
-
-          <p>
-             Salary: {selectedJob.salary_min} - {selectedJob.salary_max}
-          </p>
-
-          <p>{selectedJob.description}</p>
-
-          <p> Skills: {selectedJob.skills?.join(", ")}</p>
-
-          <button
-            className="btn btn-green"
-            onClick={() => alert("Applied Successfully ")}
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedJob(null)}
+        >
+          <div
+            className="detail-box"
+            onClick={(e) => e.stopPropagation()}
           >
-             Apply Now
-          </button>
+            <div className="detail-header">
+              <h2>{selectedJob.title}</h2>
 
-          <button
-            className="btn btn-close"
-            onClick={() => setSelectedJob(null)}
-          >
-            Close
-          </button>
+              <button
+                className="close-btn"
+                onClick={() => setSelectedJob(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="meta-grid">
+              <div className="meta-item">
+                 {selectedJob.company}
+              </div>
+
+              <div className="meta-item">
+                 {selectedJob.location}
+              </div>
+
+              <div className="meta-item">
+                 {selectedJob.job_type}
+              </div>
+
+              <div className="meta-item">
+                 {selectedJob.experience}
+              </div>
+            </div>
+
+            <div className="salary-box">
+               ₹{selectedJob.salary_min?.toLocaleString()} -
+              ₹{selectedJob.salary_max?.toLocaleString()}
+            </div>
+
+            <div className="section">
+              <h4> Description</h4>
+              <p>{selectedJob.description}</p>
+            </div>
+
+            <div className="section">
+              <h4>🛠 Required Skills</h4>
+
+              <div className="skills-wrapper">
+                {selectedJob.skills?.map(
+                  (skill: string, index: number) => (
+                    <span key={index} className="skill-chip">
+                      {skill}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div className="button-row">
+              <button
+                className="btn btn-primary"
+                onClick={() =>
+                  alert("Applied Successfully ")
+                }
+              >
+                Apply Now
+              </button>
+
+              <button
+                className="btn btn-close"
+                onClick={() => setSelectedJob(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

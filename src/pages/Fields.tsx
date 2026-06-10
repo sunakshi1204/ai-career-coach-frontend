@@ -13,13 +13,18 @@ function Fields() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    axios
-      .get("https://ai-career-coach-backend-ye2g.onrender.com/fields/")
-      .then((res) => setFields(res.data))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+useEffect(() => {
+  axios
+    .get("https://ai-career-coach-backend-ye2g.onrender.com/fields/")
+    .then((res) => {
+      const uniqueFields = [
+        ...new Map(res.data.map((f: Field) => [f.name, f])).values()
+      ];
+      setFields(uniqueFields);
+    })
+    .catch((err) => console.error(err))
+    .finally(() => setLoading(false));
+}, []);
 
   if (loading) {
     return (

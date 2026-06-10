@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+
 
 type QuestionType = {
   question_id: number | null;
@@ -36,18 +37,32 @@ function Interview() {
   const [output, setOutput] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [availableTopics, setAvailableTopics] = useState<TopicType[]>([]);
- const [submitted, setSubmitted] = useState(false);
+  const loadedRef = useRef(false);
+
   const isCoding = question?.is_coding;
   const qType = question?.type?.toLowerCase();
 
+  // useEffect(() => {
+  //   loadTopics();
+  // }, []);
   useEffect(() => {
-    loadTopics();
-  }, []);
+  if (loadedRef.current) return;
+  loadedRef.current = true;
 
-  const loadTopics = async () => {
-    const res = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/get-topics/${categoryId}/`);
-    setAvailableTopics(res.data);
-  };
+  loadTopics();
+}, []);
+
+const loadTopics = async () => {
+  const res = await axios.get(
+    `https://ai-career-coach-backend-ye2g.onrender.com/get-topics/${categoryId}/`
+  );
+
+  const uniqueTopics = Array.from(
+    new Map(res.data.map((t: any) => [t.id, t])).values()
+  );
+
+  setAvailableTopics(uniqueTopics);
+};
 
   const handleStart = () => {
     setStarted(true);
@@ -56,12 +71,15 @@ function Interview() {
 
   const handleStartWithTopics = async () => {
     try {
-      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/start-interview/", {
-        name: "User",
-        field_id: fieldId,
-        category_id: categoryId,
-        topics: topics,
-      });
+      const res = await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/start-interview/",
+        {
+          name: "User",
+          field_id: fieldId,
+          category_id: categoryId,
+          topics: topics,
+        }
+      );
       setSessionId(res.data.session_id);
       setStep("interview");
     } catch (err) {
@@ -78,10 +96,13 @@ function Interview() {
 
   const fetchQuestion = async (sid: number, stepNo: number) => {
     try {
-      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/get-next-question/", {
-        session_id: sid,
-        step: stepNo,
-      });
+      const res = await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/get-next-question/",
+        {
+          session_id: sid,
+          step: stepNo,
+        }
+      );
       console.log("QUESTION RESPONSE:", res.data);
       setQuestion(res.data);
       setAnswer("");
@@ -95,17 +116,20 @@ function Interview() {
     }
   };
 
-  // ================= HANDLE NEXT — FIXED =================
-const handleNext = async () => {
+  const handleNext = async () => {
     if (!sessionId) return;
 
-    // Hamesha answer submit karo
-    if (question?.question_id && !feedback) { 
-      await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
-        session_id: sessionId,
-        question_id: question.question_id,
-        answer: isCoding ? (code || "No code submitted") : (answer || "No answer submitted"),
-      });
+    if (question?.question_id && !feedback) {
+      await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/",
+        {
+          session_id: sessionId,
+          question_id: question.question_id,
+          answer: isCoding
+            ? code || "No code submitted"
+            : answer || "No answer submitted",
+        }
+      );
     }
 
     const next = stepIndex + 1;
@@ -114,17 +138,59 @@ const handleNext = async () => {
     const res = await fetchQuestion(sessionId, next);
 
     if (!res || res.done) {
-      const report = await axios.get(`https://ai-career-coach-backend-ye2g.onrender.com/report/${sessionId}/`);
+      const report = await axios.get(
+        `https://ai-career-coach-backend-ye2g.onrender.com/report/${sessionId}/`
+      );
       setAnalysis(report.data);
       setInterviewDone(true);
     }
   };
+
   const runCode = async () => {
-    const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/run-code/", {
-      code,
-      language: language,
-    });
+    const res = await axios.post(
+      "https://ai-career-coach-backend-ye2g.onrender.com/run-code/",
+      {
+        code,
+        language: language,
+      }
+    );
     setOutput(res.data.output);
+  };
+
+  const submitCode = async () => {
+    if (!sessionId || !question?.question_id) return;
+    if (feedback) return;
+    try {
+      const res = await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/",
+        {
+          session_id: sessionId,
+          question_id: question.question_id,
+          answer: code || "No code submitted",
+        }
+      );
+      setFeedback(res.data.feedback);
+    } catch (err) {
+      console.log("Submit code error:", err);
+    }
+  };
+
+  const submitAnswer = async () => {
+    if (!sessionId || !question?.question_id) return;
+    if (feedback) return;
+    try {
+      const res = await axios.post(
+        "https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/",
+        {
+          session_id: sessionId,
+          question_id: question.question_id,
+          answer: answer,
+        }
+      );
+      setFeedback(res.data.feedback);
+    } catch (err) {
+      console.log("Submit answer error:", err);
+    }
   };
 
   const speak = () => {
@@ -134,38 +200,7 @@ const handleNext = async () => {
     window.speechSynthesis.speak(speech);
   };
 
-  // const submitAnswer = async () => {
-  //   if (!sessionId || !question?.question_id) return;
-  //   if (feedback) return;
-
-  //   try {
-  //     const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
-  //       session_id: sessionId,
-  //       question_id: question.question_id,
-  //       answer: answer,
-  //     });
-  //     setFeedback(res.data.feedback);
-  //   } catch (err) {
-  //     console.log("Submit answer error:", err);
-  //   }
-  // };
-const submitAnswer = async () => {
-    if (!sessionId || !question?.question_id) return;
-    if (feedback) return;
-
-    try {
-      const res = await axios.post("https://ai-career-coach-backend-ye2g.onrender.com/submit-answer/", {
-        session_id: sessionId,
-        question_id: question.question_id,
-        answer: answer,
-      });
-      setFeedback(res.data.feedback);
-    } catch (err) {
-      console.log("Submit answer error:", err);
-    }
-  };
-
- 
+  // =================== START SCREEN ===================
   if (!started) {
     return (
       <div style={styles.center}>
@@ -176,6 +211,7 @@ const submitAnswer = async () => {
     );
   }
 
+  // =================== DONE SCREEN ===================
   if (interviewDone && analysis) {
     return (
       <div style={styles.page}>
@@ -188,7 +224,9 @@ const submitAnswer = async () => {
           <h3>💪 Strengths:</h3>
           {analysis.strengths.length > 0 ? (
             analysis.strengths.map((q: string, i: number) => (
-              <p key={i} style={{ color: "#FFD700" }}>✅ {q}</p>
+              <p key={i} style={{ color: "#FFD700" }}>
+                ✅ {q}
+              </p>
             ))
           ) : (
             <p style={{ color: "#fff" }}>No strengths recorded yet</p>
@@ -197,13 +235,18 @@ const submitAnswer = async () => {
           <h3>⚠️ Weaknesses:</h3>
           {analysis.weaknesses.length > 0 ? (
             analysis.weaknesses.map((q: string, i: number) => (
-              <p key={i} style={{ color: "#ff6b6b" }}>❌ {q}</p>
+              <p key={i} style={{ color: "#ff6b6b" }}>
+                ❌ {q}
+              </p>
             ))
           ) : (
             <p style={{ color: "#fff" }}>No weaknesses recorded</p>
           )}
 
-          <button style={styles.yellowBtn} onClick={() => (window.location.href = "/")}>
+          <button
+            style={styles.yellowBtn}
+            onClick={() => (window.location.href = "/")}
+          >
             🏠 Go Home
           </button>
         </div>
@@ -211,6 +254,7 @@ const submitAnswer = async () => {
     );
   }
 
+  // =================== MAIN INTERVIEW SCREEN ===================
   return (
     <>
       {feedback && (
@@ -223,13 +267,17 @@ const submitAnswer = async () => {
       <div style={styles.page}>
         <div style={styles.header}>interview.co | AI Interview Simulator</div>
 
+        {/* ========== TOPICS STEP ========== */}
         {step === "topics" && (
           <div style={styles.card}>
             <h3 style={{ color: "#FFD700" }}>📂 Select Topics (Optional)</h3>
             <p style={{ color: "#fff", fontSize: 13 }}>
-              If no topic is selected, questions will be generated from all topics.
+              If no topic is selected, questions will be generated from all
+              topics.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 10 }}>
+            <div
+              style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 10 }}
+            >
               {availableTopics.map((t) => (
                 <button
                   key={t.id}
@@ -246,7 +294,9 @@ const submitAnswer = async () => {
                     borderRadius: 6,
                     cursor: "pointer",
                     fontWeight: "bold",
-                    background: topics.includes(t.name) ? "#FFD700" : "transparent",
+                    background: topics.includes(t.name)
+                      ? "#FFD700"
+                      : "transparent",
                     color: topics.includes(t.name) ? "#000" : "#FFD700",
                   }}
                 >
@@ -254,21 +304,29 @@ const submitAnswer = async () => {
                 </button>
               ))}
             </div>
-            <button style={{ ...styles.yellowBtn, marginTop: 20 }} onClick={handleStartWithTopics}>
+            <button
+              style={{ ...styles.yellowBtn, marginTop: 20 }}
+              onClick={handleStartWithTopics}
+            >
               Start Interview 🚀
             </button>
           </div>
         )}
 
+        {/* ========== INTERVIEW STEP ========== */}
         {step === "interview" && (
           <>
+            {/* Question Card */}
             <div style={styles.card}>
-              <h2 style={{ color: "#fff" }}>{question?.question || "Loading question..."}</h2>
+              <h2 style={{ color: "#fff" }}>
+                {question?.question || "Loading question..."}
+              </h2>
               <button style={styles.yellowBtn} onClick={speak}>
                 🔊 Speak
               </button>
             </div>
 
+            {/* CODING QUESTION */}
             {isCoding && (
               <>
                 <div style={{ marginBottom: "10px" }}>
@@ -294,10 +352,17 @@ const submitAnswer = async () => {
                     ▶ Run Code
                   </button>
                   {output && <pre style={styles.output}>{output}</pre>}
+                  <button
+                    style={{ ...styles.yellowBtn, marginTop: 12 }}
+                    onClick={submitCode}
+                  >
+                    ✅ Submit Code
+                  </button>
                 </div>
               </>
             )}
 
+            {/* WEB QUESTION */}
             {qType === "web" && !isCoding && (
               <div style={styles.card}>
                 <h3 style={{ color: "#FFD700" }}>🌐 HTML Preview</h3>
@@ -306,10 +371,14 @@ const submitAnswer = async () => {
                   onChange={(e) => setAnswer(e.target.value)}
                   style={styles.textarea}
                 />
-                <div style={styles.preview} dangerouslySetInnerHTML={{ __html: answer }} />
+                <div
+                  style={styles.preview}
+                  dangerouslySetInnerHTML={{ __html: answer }}
+                />
               </div>
             )}
 
+            {/* DBMS QUESTION */}
             {qType === "dbms" && (
               <div style={styles.card}>
                 <h3 style={{ color: "#FFD700" }}>🗄 SQL Query</h3>
@@ -324,6 +393,7 @@ const submitAnswer = async () => {
               </div>
             )}
 
+            {/* THEORY QUESTION */}
             {!isCoding && qType !== "web" && qType !== "dbms" && (
               <div style={styles.card}>
                 <h3 style={{ color: "#FFD700" }}>🧠 Your Answer</h3>
@@ -336,7 +406,10 @@ const submitAnswer = async () => {
                 <button style={styles.yellowBtn} onClick={submitAnswer}>
                   ✅ Submit Answer
                 </button>
-                <button style={{ ...styles.yellowBtn, marginLeft: 10 }} onClick={speak}>
+                <button
+                  style={{ ...styles.yellowBtn, marginLeft: 10 }}
+                  onClick={speak}
+                >
                   🎤 Speak Question
                 </button>
               </div>
@@ -353,6 +426,7 @@ const submitAnswer = async () => {
 }
 
 export default Interview;
+
 const styles: any = {
   page: {
     background: "linear-gradient(135deg, #0f172a, #111827, #0b1220)",
@@ -361,7 +435,6 @@ const styles: any = {
     fontFamily: "system-ui",
     color: "#fff",
   },
-
   header: {
     background: "rgba(255,255,255,0.05)",
     backdropFilter: "blur(12px)",
@@ -374,7 +447,6 @@ const styles: any = {
     marginBottom: "25px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
   },
-
   center: {
     display: "flex",
     height: "100vh",
@@ -382,7 +454,6 @@ const styles: any = {
     alignItems: "center",
     background: "linear-gradient(135deg, #0f172a, #111827, #0b1220)",
   },
-
   startBtn: {
     background: "#38bdf8",
     color: "#0f172a",
@@ -394,7 +465,6 @@ const styles: any = {
     fontSize: "16px",
     boxShadow: "0 0 20px rgba(56,189,248,0.3)",
   },
-
   card: {
     background: "rgba(255,255,255,0.05)",
     backdropFilter: "blur(12px)",
@@ -404,8 +474,7 @@ const styles: any = {
     borderRadius: "16px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
   },
-
-feedbackCard: {
+  feedbackCard: {
     background: "rgba(56,189,248,0.08)",
     border: "1px solid rgba(56,189,248,0.3)",
     padding: "20px",
@@ -417,7 +486,6 @@ feedbackCard: {
     overflowY: "auto",
     wordBreak: "break-word",
   },
-
   textarea: {
     width: "100%",
     height: "140px",
@@ -430,7 +498,6 @@ feedbackCard: {
     outline: "none",
     resize: "vertical",
   },
-
   codeBox: {
     width: "100%",
     height: "260px",
@@ -443,7 +510,6 @@ feedbackCard: {
     boxSizing: "border-box",
     resize: "vertical",
   },
-
   blackBtn: {
     background: "#1e293b",
     color: "#38bdf8",
@@ -454,7 +520,6 @@ feedbackCard: {
     borderRadius: "10px",
     fontWeight: "600",
   },
-
   yellowBtn: {
     background: "#38bdf8",
     color: "#0f172a",
@@ -465,7 +530,6 @@ feedbackCard: {
     cursor: "pointer",
     borderRadius: "10px",
   },
-
   output: {
     background: "#0d1117",
     color: "#22c55e",
@@ -475,7 +539,6 @@ feedbackCard: {
     border: "1px solid rgba(255,255,255,0.08)",
     overflowX: "auto",
   },
-
   preview: {
     border: "1px solid rgba(56,189,248,0.25)",
     borderRadius: "12px",
@@ -484,7 +547,6 @@ feedbackCard: {
     background: "#fff",
     overflow: "auto",
   },
-
   nextBtn: {
     width: "100%",
     background: "#38bdf8",
