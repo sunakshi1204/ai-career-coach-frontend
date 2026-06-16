@@ -410,7 +410,7 @@ const loadTopics = async () => {
                   style={{ ...styles.yellowBtn, marginLeft: 10 }}
                   onClick={speak}
                 >
-                  🎤 Speak Question
+                  🎤 Speak question  
                 </button>
               </div>
             )}
